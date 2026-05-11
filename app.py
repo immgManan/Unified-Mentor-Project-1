@@ -1,3 +1,3 @@
-import streamlit as st
-import pandas as pd 
-import plotly.express as px
+top_products = Products_data.sort_values(by = 'Gross Profit', ascending = False)
+fig = px.bar(top_products, x = 'Product Name',y = 'Gross Profit', orientation = 'h',title ='Products by Profit',text = 'Gross Profit')
+st.plotly_chart(fig)
