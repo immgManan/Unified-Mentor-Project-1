@@ -1,3 +1,5 @@
+st.title("Nassau Candy Distributor Sales Analysis")
+Products_data = pd.read_csv(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Groupby Product Name.csv")
 top_products = Products_data.sort_values(by = 'Gross Profit', ascending = False)
 fig = px.bar(top_products, x = 'Product Name',y = 'Gross Profit', orientation = 'h',title ='Products by Profit',text = 'Gross Profit')
 st.plotly_chart(fig)
