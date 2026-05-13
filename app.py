@@ -37,6 +37,19 @@ start_date = pd.to_datetime(date_range[0])
 end_date = pd.to_datetime(date_range[1])        
 filtered_data = filtered_data[(filtered_data['Order Date'] >= start_date) & (filtered_data['Order Date'] <= end_date)]
 
+# Margin Threshold slider
+margin_percent = (filtered_data['Gross Profit'] / filtered_data['Sales']) * 100
+
+min_margin = float(margin_percent.min())
+max_margin = float(margin_percent.max())
+
+margin_threshold = st.sidebar.slider(
+    "Select Maximum Gross Margin %",
+    min_value=round(min_margin, 2),
+    max_value=round(max_margin, 2),
+    value=round(max_margin, 2),
+    step=0.1)
+filtered_data = filtered_data[margin_percent <= margin_threshold]
 
 #Product_data
 new_data = filtered_data.groupby(['Product Name','Division']).agg(
@@ -48,6 +61,8 @@ new_data['Revenue Contribution'] = ((new_data['Sales']/Total_Sales)*100).round(2
 new_data['Profit contribution'] = ((new_data['Gross Profit']/(new_data['Gross Profit'].sum()))*100).round(2)
 # sort products in descending order of profit
 top_products = new_data.sort_values(by = 'Gross Profit', ascending = False)
+
+
 
 #Division Data
 division_data = filtered_data.groupby('Division').agg({
@@ -92,6 +107,8 @@ fig4.update_layout(yaxis_title = 'Product Name', height = 600, title_x = 0.3)
 # Display the chart
 st.plotly_chart(fig4, use_container_width = True)
 
+
+st.subheader("Pareto Analysis")
 # Pareto analysis
 import plotly.graph_objects as go
 fig5 = go.Figure()
@@ -110,3 +127,9 @@ fig5.add_hline(y=80, line_dash = 'dash', line_color = 'green', annotation_text =
            yref = 'y2')
 # Display the chart
 st.plotly_chart(fig5, use_container_width=True)
+
+# Cost Structure Diagnostics chart
+st.subheader("Cost Structure Diagnostics")
+fig6 = px.scatter(data_frame = new_data, x = 'Cost', y = 'Sales', color = 'Gross Margin %'
+                  , hover_name = 'Product Name', title = 'Cost vs Sales with Gross Margin %')
+st.plotly_chart(fig6, use_container_width = True)
