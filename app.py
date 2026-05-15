@@ -110,6 +110,16 @@ st.plotly_chart(fig4, use_container_width = True)
 
 st.subheader("Pareto Analysis")
 # Pareto analysis
+
+# Sort products by highest profit first
+top_products = top_products.sort_values(
+    by='Gross Profit',
+    ascending=False)
+
+# Calculate cumulative percentage
+top_products['Profit contribution'] = (
+    top_products['Gross Profit'].cumsum()
+    / top_products['Gross Profit'].sum()) * 100
 import plotly.graph_objects as go
 fig5 = go.Figure()
 # Bar chart
@@ -121,7 +131,7 @@ fig5.add_trace(go.Scatter(y = top_products['Profit contribution'], x = top_produ
                           mode = 'lines+markers'))
 # Layout
 fig5.update_layout(title = 'Pareto Analysis of Products',height = 1000, width = 1300, yaxis_title = 'Gross Profit ($)',
-                   yaxis2 = dict(overlaying = 'y', side = 'top', range = [0,100]), xaxis_title
+                   yaxis2 = dict(overlaying = 'y', side = 'right', range = [0,100]), xaxis_title
                    = 'Product Name')
 fig5.add_hline(y=80, line_dash = 'dash', line_color = 'green', annotation_text = '80% Threshold',
            yref = 'y2')
@@ -133,3 +143,64 @@ st.subheader("Cost Structure Diagnostics")
 fig6 = px.scatter(data_frame = new_data, x = 'Cost', y = 'Sales', color = 'Gross Margin %'
                   , hover_name = 'Product Name', title = 'Cost vs Sales with Gross Margin %')
 st.plotly_chart(fig6, use_container_width = True)
+
+#Factory to region maps
+factory_region_data = pd.read_excel(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Factory Coordinates.xlsx")
+factory_region_data = factory_region_data.rename(columns={
+    "Factory by Product.Product Name": "Product Name",
+    "Factory by Product.Division": "Division"})
+
+# Clean merge columns
+factory_region_data["Product Name"] = (
+    factory_region_data["Product Name"]
+    .astype(str)
+    .str.strip()
+    .str.lower())
+
+filtered_data["Product Name"] = (
+    filtered_data["Product Name"]
+    .astype(str)
+    .str.strip()
+    .str.lower())
+
+# Calculate total orders from filtered_data
+orders_summary = (filtered_data.groupby("Product Name")
+    .size()
+    .reset_index(name="Total Orders"))
+
+# Merge with factory coordinates
+map_data = pd.merge(
+    factory_region_data,
+    orders_summary,
+    on="Product Name",
+    how="left")
+
+# Fill missing values
+map_data["Total Orders"] = map_data["Total Orders"].fillna(0)
+
+# create bubble map
+fig = px.scatter_mapbox(
+    map_data,
+    lat="Latitude",
+    lon="Longitude",
+    size="Total Orders",
+    color="Total Orders",
+    hover_name="Factory",
+    hover_data=[
+        "Division",
+        "Product Name",
+        "Total Orders"],
+    zoom=3,
+    height=650,
+    size_max=40, color_continuous_scale="Plasma",
+    opacity=0.65 )
+
+fig.update_layout(
+    mapbox_style="carto-darkmatter",
+    paper_bgcolor="#111111",
+    plot_bgcolor="#111111",
+    font=dict(color="white"),
+    margin={"r":0,"t":0,"l":0,"b":0})
+
+st.plotly_chart(fig, use_container_width=True)
+
