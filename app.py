@@ -4,8 +4,7 @@ import plotly.express as px
 
 
 st.title("Nassau Candy Distributor")
-# First Chart title
-st.subheader("Product Profitability Analysis")
+
 
 # Load the data
 filtered_data = pd.read_csv(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Filter by date.csv")
@@ -51,6 +50,15 @@ margin_threshold = st.sidebar.slider(
     step=0.1)
 filtered_data = filtered_data[margin_percent <= margin_threshold]
 
+margin_threshold = st.sidebar.slider(
+    "Select Minimum Gross Margin %",
+    min_value=round(min_margin, 2),
+    max_value=round(max_margin, 2),
+    value=round(min_margin, 2),
+    step=0.1)
+filtered_data = filtered_data[margin_percent >= margin_threshold]
+
+
 #Product_data
 new_data = filtered_data.groupby(['Product Name','Division']).agg(
     {'Cost':'sum','Sales':'sum','Units':'sum','Gross Profit':'sum'}).reset_index()
@@ -72,10 +80,11 @@ division_data['Profit Per Unit'] = ((division_data['Gross Profit']/division_data
 division_data['Revenue Contribution'] = (division_data['Sales']/(division_data['Sales'].sum())*100).round(2)
 division_data['Profit contribution'] = (division_data['Gross Profit']/(division_data['Gross Profit'].sum())*100).round(2)
 
-
+# First Chart title
+st.subheader("Product Profitability Analysis")
 # Create a bar chart
 fig1 = px.bar(top_products, x = 'Gross Profit', y = 'Product Name', 
-               text = 'Gross Profit', title = 'Top Products by Profit')
+               text = 'Gross Profit', title = 'Top Products by Profit (15 Products)')
 fig1.update_layout( height= 600, bargap = 0.2)
 fig1.update_traces(texttemplate = '$%{text:.2f}')
 # Dispaly the Chart
@@ -93,7 +102,7 @@ st.subheader("Division Performance Analysis")
 
 # Create a clustered bar chart
 fig3 = px.bar(division_data, x = 'Division', y = ['Sales', 'Gross Profit'], barmode = 'group', 
-              title = 'Sales and Gross Profit by Division')
+              title = 'Sales and Gross Profit by Division (3 Divisions)')
 fig3.update_layout(xaxis_title = 'Division', yaxis_title = 'Amount ($)', height = 1000,title_x = 0.25)
 fig3.update_yaxes(tickprefix = '$')
 
@@ -144,6 +153,8 @@ fig6 = px.scatter(data_frame = new_data, x = 'Cost', y = 'Sales', color = 'Gross
                   , hover_name = 'Product Name', title = 'Cost vs Sales with Gross Margin %')
 st.plotly_chart(fig6, use_container_width = True)
 
+
+st.subheader("Factory Location and Order Volume Analysis (5 Factories)")
 #Factory to region maps
 factory_region_data = pd.read_excel(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Factory Coordinates.xlsx")
 factory_region_data = factory_region_data.rename(columns={
@@ -179,7 +190,7 @@ map_data = pd.merge(
 map_data["Total Orders"] = map_data["Total Orders"].fillna(0)
 
 # create bubble map
-fig = px.scatter_mapbox(
+fig7= px.scatter_mapbox(
     map_data,
     lat="Latitude",
     lon="Longitude",
@@ -195,12 +206,12 @@ fig = px.scatter_mapbox(
     size_max=40, color_continuous_scale="Plasma",
     opacity=0.65 )
 
-fig.update_layout(
+fig7.update_layout(
     mapbox_style="carto-darkmatter",
     paper_bgcolor="#111111",
     plot_bgcolor="#111111",
     font=dict(color="white"),
     margin={"r":0,"t":0,"l":0,"b":0})
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig7, use_container_width=True)
 
