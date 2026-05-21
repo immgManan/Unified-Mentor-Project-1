@@ -31,7 +31,7 @@ filtered_data = filtered_data[filtered_data['Product Name'].isin(product_filter)
 # Date filter
 st.sidebar.subheader("Date Filter")
 filtered_data['Order Date'] = pd.to_datetime(filtered_data['Order Date'])
-date_range = st.sidebar.date_input("Select Date Range", [filtered_data['Order Date'].min(), filtered_data['Order Date'].max()])
+date_range = st.sidebar.date_input("Select Date Range (valid 2024-2025)", [filtered_data['Order Date'].min(), filtered_data['Order Date'].max()])
 start_date = pd.to_datetime(date_range[0])  
 end_date = pd.to_datetime(date_range[1])        
 filtered_data = filtered_data[(filtered_data['Order Date'] >= start_date) & (filtered_data['Order Date'] <= end_date)]
@@ -42,21 +42,14 @@ margin_percent = (filtered_data['Gross Profit'] / filtered_data['Sales']) * 100
 min_margin = float(margin_percent.min())
 max_margin = float(margin_percent.max())
 
-margin_threshold = st.sidebar.slider(
-    "Select Maximum Gross Margin %",
+margin_range = st.sidebar.slider(
+    "Select Gross Margin %",
     min_value=round(min_margin, 2),
     max_value=round(max_margin, 2),
-    value=round(max_margin, 2),
+    value=(round(max_margin, 2), round(min_margin, 2)),
     step=0.1)
-filtered_data = filtered_data[margin_percent <= margin_threshold]
-
-margin_threshold = st.sidebar.slider(
-    "Select Minimum Gross Margin %",
-    min_value=round(min_margin, 2),
-    max_value=round(max_margin, 2),
-    value=round(min_margin, 2),
-    step=0.1)
-filtered_data = filtered_data[margin_percent >= margin_threshold]
+filtered_data = filtered_data[(margin_percent <= margin_range[1]) & 
+                              (margin_percent >= margin_range[0])]
 
 
 #Product_data
@@ -67,6 +60,7 @@ new_data['Profit Per Unit'] = (new_data['Gross Profit']/new_data['Units']).round
 Total_Sales = new_data['Sales'].sum()
 new_data['Revenue Contribution'] = ((new_data['Sales']/Total_Sales)*100).round(2)
 new_data['Profit contribution'] = ((new_data['Gross Profit']/(new_data['Gross Profit'].sum()))*100).round(2)
+
 # sort products in descending order of profit
 top_products = new_data.sort_values(by = 'Gross Profit', ascending = False)
 
@@ -159,7 +153,8 @@ st.subheader("Factory Location and Order Volume Analysis (5 Factories)")
 factory_region_data = pd.read_excel(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Factory Coordinates.xlsx")
 factory_region_data = factory_region_data.rename(columns={
     "Factory by Product.Product Name": "Product Name",
-    "Factory by Product.Division": "Division"})
+    "Factory by Product.Division": "Division",
+    "Factory": "Factory"})
 
 # Clean merge columns
 factory_region_data["Product Name"] = (
@@ -189,6 +184,10 @@ map_data = pd.merge(
 # Fill missing values
 map_data["Total Orders"] = map_data["Total Orders"].fillna(0)
 
+# Aggregate Factory totals
+map_data = (map_data.groupby(["Factory", "Latitude", "Longitude"], as_index=False)["Total Orders"]
+.sum())
+
 # create bubble map
 fig7= px.scatter_mapbox(
     map_data,
@@ -198,20 +197,14 @@ fig7= px.scatter_mapbox(
     color="Total Orders",
     hover_name="Factory",
     hover_data=[
-        "Division",
-        "Product Name",
+        "Factory",
         "Total Orders"],
     zoom=3,
     height=650,
     size_max=40, color_continuous_scale="Plasma",
     opacity=0.65 )
 
-fig7.update_layout(
-    mapbox_style="carto-darkmatter",
-    paper_bgcolor="#111111",
-    plot_bgcolor="#111111",
-    font=dict(color="white"),
-    margin={"r":0,"t":0,"l":0,"b":0})
-
+fig7.update_layout(mapbox_style="open-street-map")
+fig7.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, title = 'Factory Locations and Order Volumes')
 st.plotly_chart(fig7, use_container_width=True)
 
