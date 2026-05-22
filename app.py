@@ -7,7 +7,7 @@ st.title("Nassau Candy Distributor")
 
 
 # Load the data
-filtered_data = pd.read_csv("Filter by Date.csv")
+filtered_data = pd.read_csv("Filter by date.csv")
 
 # filters
 st.sidebar.header("Filters")
