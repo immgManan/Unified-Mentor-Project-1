@@ -7,7 +7,7 @@ st.title("Nassau Candy Distributor")
 
 
 # Load the data
-filtered_data = pd.read_csv(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Filter by date.csv")
+filtered_data = pd.read_csv("Filter by Date.csv")
 
 # filters
 st.sidebar.header("Filters")
@@ -159,7 +159,7 @@ st.plotly_chart(fig6, use_container_width = True)
 
 st.subheader("Factory Location and Order Volume Analysis (5 Factories)")
 #Factory to region maps
-factory_region_data = pd.read_excel(r"C:\Users\user\Documents\GitHub\Unified-Mentor-Project-1\Factory Coordinates.xlsx")
+factory_region_data = pd.read_excel("Factory Coordinates.xlsx")
 factory_region_data = factory_region_data.rename(columns={
     "Factory by Product.Product Name": "Product Name",
     "Factory by Product.Division": "Division",
