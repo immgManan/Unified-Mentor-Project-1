@@ -31,10 +31,12 @@ filtered_data = filtered_data[filtered_data['Product Name'].isin(product_filter)
 # Date filter
 st.sidebar.subheader("Date Filter")
 filtered_data['Order Date'] = pd.to_datetime(filtered_data['Order Date'])
-date_range = st.sidebar.date_input("Select Date Range (valid 2024-2025)", [filtered_data['Order Date'].min(), filtered_data['Order Date'].max()])
+date_range = st.sidebar.date_input("Select Date Range (valid 2024-2025)",
+                  [filtered_data['Order Date'].min(), filtered_data['Order Date'].max()])
 start_date = pd.to_datetime(date_range[0])  
 end_date = pd.to_datetime(date_range[1])        
-filtered_data = filtered_data[(filtered_data['Order Date'] >= start_date) & (filtered_data['Order Date'] <= end_date)]
+filtered_data = filtered_data[(filtered_data['Order Date'] >= start_date) & 
+                              (filtered_data['Order Date'] <= end_date)]
 
 # Margin Threshold slider
 margin_percent = (filtered_data['Gross Profit'] / filtered_data['Sales']) * 100
@@ -55,10 +57,14 @@ filtered_data = filtered_data[(margin_percent <= margin_range[1]) &
 #Product_data
 new_data = filtered_data.groupby(['Product Name','Division']).agg(
     {'Cost':'sum','Sales':'sum','Units':'sum','Gross Profit':'sum'}).reset_index()
+
 new_data['Gross Margin %'] = ((new_data['Gross Profit']/new_data['Sales'])*100).round(2)
+
 new_data['Profit Per Unit'] = (new_data['Gross Profit']/new_data['Units']).round(2)
+
 Total_Sales = new_data['Sales'].sum()
 new_data['Revenue Contribution'] = ((new_data['Sales']/Total_Sales)*100).round(2)
+
 new_data['Profit contribution'] = ((new_data['Gross Profit']/(new_data['Gross Profit'].sum()))*100).round(2)
 
 # sort products in descending order of profit
@@ -70,8 +76,11 @@ top_products = new_data.sort_values(by = 'Gross Profit', ascending = False)
 division_data = filtered_data.groupby('Division').agg({
     'Cost':'sum','Sales':'sum','Units':'sum','Gross Profit':'sum'}).reset_index()
 division_data['Gross Margin %'] = ((division_data['Gross Profit']/division_data['Sales'])*100).round(2)
+
 division_data['Profit Per Unit'] = ((division_data['Gross Profit']/division_data['Units'])*100).round(2)
+
 division_data['Revenue Contribution'] = (division_data['Sales']/(division_data['Sales'].sum())*100).round(2)
+
 division_data['Profit contribution'] = (division_data['Gross Profit']/(division_data['Gross Profit'].sum())*100).round(2)
 
 # First Chart title
